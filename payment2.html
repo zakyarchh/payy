@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pembayaran JKT48 & Layanan</title>
+    <!-- Tailwind CSS untuk styling modern dan responsif -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome untuk ikon WhatsApp -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" xintegrity="sha512-iecdLmaskl7CVs+jR5rP3JqB84m/fI+s/21f/h1bC2iE2D2L7w4m2x8jNq9/4f/g+z+H6p6/gQ+R8w6D8G8Jg==" crossorigin="anonymous" referrerpolicy="no-referrer"
+    />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="container bg-gray-800 p-8 rounded-2xl shadow-xl max-w-lg w-full">
+        <h2 class="text-3xl text-center text-teal-400 font-bold mb-6">Formulir Pembayaran</h2>
+        <form id="paymentForm">
+            <div class="space-y-4">
+                <div>
+                    <label for="jenis" class="block text-sm font-medium text-gray-300">Jenis Pembelian</label>
+                    <select id="jenis" required class="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-teal-500 focus:border-teal-500 shadow-sm transition-colors">
+                        <option value="">-- Pilih --</option>
+                        <option value="Show JKT48">🎤 Show JKT48</option>
+                        <option value="Joki Website">💻 Joki Website</option>
+                        <option value="Top Up ML">🔋 edit foto/editing</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="nama" class="block text-sm font-medium text-gray-300">Nama Lengkap</label>
+                    <input type="text" id="nama" required class="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-teal-500 focus:border-teal-500 shadow-sm transition-colors" />
+                </div>
+
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-300">Email</label>
+                    <input type="email" id="email" required class="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-teal-500 focus:border-teal-500 shadow-sm transition-colors" />
+                </div>
+
+                <div>
+                    <label for="jumlah" class="block text-sm font-medium text-gray-300">Jumlah Pembayaran (Rp)</label>
+                    <input type="number" id="jumlah" min="1000" required class="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-teal-500 focus:border-teal-500 shadow-sm transition-colors" />
+                </div>
+            </div>
+
+            <button type="submit" class="mt-6 w-full py-3 px-4 bg-teal-500 text-white font-semibold rounded-lg shadow-md hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors">
+                Dapatkan Instruksi Pembayaran
+            </button>
+        </form>
+
+        <div id="paymentInstructionsSection" class="hidden mt-8">
+            <div class="bg-gray-700 text-teal-400 p-6 rounded-lg text-center shadow-lg">
+                <h3 class="text-2xl font-bold mb-2">Instruksi Pembayaran Anda</h3>
+                <p class="text-sm text-gray-300 mb-4">Mohon selesaikan pembayaran Anda sesuai detail di bawah ini:</p>
+                <div class="detail text-left text-gray-200 space-y-1 mb-4" id="detailOutput"></div>
+            </div>
+
+            <div id="qrSection" class="mt-6 text-center">
+                <label class="block text-sm font-medium text-gray-300 mb-2">Scan QRIS</label>
+                <!-- Image of a generic QRIS code -->
+                <img src="https://files.catbox.moe/0lo7qh.png" alt="QRIS zkai" class="w-2/3 mx-auto rounded-lg shadow-lg" onerror="this.onerror=null; this.src='https://placehold.co/400x400/1e1e1e/888?text=QR+Code+Unavailable';" />
+                <!-- Instruksi tambahan untuk memasukkan jumlah secara manual -->
+                <p id="qrisInstructionText" class="mt-4 text-sm text-gray-300"></p>
+            </div>
+
+            <div id="ewalletInfo" class="mt-6 bg-gray-700 p-4 rounded-lg shadow-lg text-center">
+                <strong class="text-teal-400">Nomor E-Wallet:</strong> 085183885551
+                <p class="mt-2 text-sm text-gray-300">
+                    Silakan transfer sejumlah <strong id="ewalletAmount" class="text-teal-400"></strong> ke nomor di atas.
+                </p>
+            </div>
+
+            <!-- Tombol baru untuk kirim bukti pembayaran via WhatsApp -->
+            <a id="waButton" href="#" target="_blank" class="mt-6 w-full py-3 px-4 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors flex items-center justify-center space-x-2">
+                <i class="fab fa-whatsapp"></i>
+                <span>Kirim Bukti Pembayaran via WhatsApp</span>
+            </a>
+
+            <button id="aiConfirmationButton" class="mt-4 w-full py-3 px-4 bg-teal-500 text-white font-semibold rounded-lg shadow-md hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors">
+                Konfirmasi Pembayaran dengan AI
+            </button>
+            <div id="aiResponseSection" class="hidden mt-6 bg-gray-700 p-6 rounded-lg shadow-lg">
+                <div class="flex items-center justify-center">
+                    <svg id="loadingSpinner" class="hidden animate-spin h-6 w-6 text-teal-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p id="loadingText" class="hidden text-sm ml-2 text-gray-300">Menunggu respons AI...</p>
+                </div>
+                <div id="aiResponseMessage" class="mt-4 text-center text-gray-200"></div>
+            </div>
+
+            <div class="wa-instruksi mt-6 bg-gray-700 p-4 rounded-lg border-l-4 border-teal-400 text-sm text-gray-300">
+                <p><strong>Penting:</strong> Setelah Anda berhasil melakukan pembayaran, jangan lupa untuk <strong class="text-teal-400">mengirim bukti pembayaran</strong> Anda ke WhatsApp kami.</p>
+                <br>
+                <a href="https://wa.me/6285183885551" target="_blank" class="text-teal-400 underline hover:text-teal-500 transition-colors">
+                    <i class="fab fa-whatsapp"></i> <span class="ml-1">0851-8388-5551 (klik untuk chat)</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kotak alert kustom -->
+    <div id="customAlert" class="hidden fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75 z-50">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-2xl w-80 max-w-sm text-center">
+            <p id="alertMessage" class="text-white mb-4"></p>
+            <button onclick="closeAlert()" class="w-full py-2 px-4 bg-teal-500 text-white font-semibold rounded-lg hover:bg-teal-600 transition-colors">
+                OK
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Fungsi alert kustom
+        function showAlert(message) {
+            document.getElementById('alertMessage').innerText = message;
+            document.getElementById('customAlert').classList.remove('hidden');
+        }
+
+        function closeAlert() {
+            document.getElementById('customAlert').classList.add('hidden');
+        }
+
+        const paymentForm = document.getElementById("paymentForm");
+        const paymentInstructionsSection = document.getElementById("paymentInstructionsSection");
+        const detailOutput = document.getElementById("detailOutput");
+        const ewalletInfo = document.getElementById("ewalletInfo");
+        const ewalletAmount = document.getElementById("ewalletAmount");
+        const waButton = document.getElementById("waButton");
+        const aiConfirmationButton = document.getElementById("aiConfirmationButton");
+        const aiResponseSection = document.getElementById("aiResponseSection");
+        const loadingSpinner = document.getElementById("loadingSpinner");
+        const loadingText = document.getElementById("loadingText");
+        const aiResponseMessage = document.getElementById("aiResponseMessage");
+        const qrSection = document.getElementById("qrSection");
+        const qrisInstructionText = document.getElementById("qrisInstructionText");
+
+        paymentForm.addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const jenis = document.getElementById("jenis").value;
+            const nama = document.getElementById("nama").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const jumlah = parseInt(document.getElementById("jumlah").value);
+
+            if (!jenis || !nama || !email || isNaN(jumlah)) {
+                showAlert("Mohon isi semua kolom dengan benar.");
+                return;
+            }
+
+            if (jumlah < 1000) {
+                showAlert("Minimal pembayaran Rp1.000.");
+                return;
+            }
+
+            // Sembunyikan formulir dan tampilkan instruksi pembayaran
+            paymentForm.classList.add("hidden");
+            paymentInstructionsSection.classList.remove("hidden");
+
+            // Tampilkan QR dan informasi E-Wallet
+            qrSection.classList.remove("hidden");
+            ewalletInfo.classList.remove("hidden");
+
+            // Perbarui detail pembayaran
+            detailOutput.innerHTML = `
+                <strong>Jenis Pembelian:</strong> ${jenis}<br>
+                <strong>Nama:</strong> ${nama}<br>
+                <strong>Email:</strong> ${email}<br>
+                <strong>Jumlah:</strong> Rp ${jumlah.toLocaleString()}<br><br>
+                Silakan lakukan pembayaran ke nomor E-Wallet/QRIS di bawah ini.
+            `;
+
+            // Perbarui jumlah pembayaran di instruksi E-Wallet/QRIS
+            ewalletAmount.innerText = `Rp ${jumlah.toLocaleString()}`;
+            qrisInstructionText.innerHTML = `Setelah memindai, pastikan jumlah pembayaran yang Anda masukkan adalah **Rp ${jumlah.toLocaleString()}**.`;
+
+            // Buat pesan WhatsApp yang sudah terisi otomatis
+            const waMessageText = `Halo, saya ingin konfirmasi pembayaran untuk pesanan ${jenis} atas nama ${nama} sebesar Rp ${jumlah.toLocaleString()}. Berikut bukti pembayarannya.`;
+            const encodedMessage = encodeURIComponent(waMessageText);
+            waButton.href = `https://wa.me/6285183885551?text=${encodedMessage}`;
+        });
+
+        aiConfirmationButton.addEventListener("click", async() => {
+            const jenis = document.getElementById("jenis").value;
+            const nama = document.getElementById("nama").value.trim();
+            const jumlah = parseInt(document.getElementById("jumlah").value);
+
+            if (!jenis || !nama || isNaN(jumlah)) {
+                showAlert("Mohon isi semua detail formulir sebelum meminta konfirmasi AI.");
+                return;
+            }
+
+            aiResponseSection.classList.remove("hidden");
+            loadingSpinner.classList.remove("hidden");
+            loadingText.classList.remove("hidden");
+            aiResponseMessage.innerText = "";
+
+            const prompt = `Anda adalah asisten AI yang ramah dan profesional. Buat pesan konfirmasi pembayaran singkat untuk pelanggan bernama ${nama}. Pembeliannya adalah ${jenis} dengan total biaya Rp ${jumlah.toLocaleString()}. Jangan sebutkan nomor kontak atau detail pribadi lainnya.`;
+            const payload = {
+                contents: [{
+                    role: "user",
+                    parts: [{
+                        text: prompt
+                    }]
+                }]
+            };
+
+            const apiKey = ""; // Kunci API akan otomatis disediakan
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            // Implementasi exponential backoff untuk mencoba kembali permintaan yang gagal
+            const maxRetries = 3;
+            let currentRetry = 0;
+            let success = false;
+
+            while (currentRetry < maxRetries && !success) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        aiResponseMessage.innerHTML = `<p>${text}</p>`;
+                        success = true;
+                    } else {
+                        throw new Error('Struktur respons AI tidak terduga.');
+                    }
+                } catch (error) {
+                    currentRetry++;
+                    console.error(`Percobaan ${currentRetry} gagal:`, error);
+                    if (currentRetry < maxRetries) {
+                        const delay = Math.pow(2, currentRetry) * 1000;
+                        await new Promise(res => setTimeout(res, delay));
+                    }
+                }
+            }
+
+            if (!success) {
+                aiResponseMessage.innerHTML = `<p class="text-red-400">Maaf, terjadi kesalahan. Silakan coba lagi nanti.</p>`;
+            }
+
+            loadingSpinner.classList.add("hidden");
+            loadingText.classList.add("hidden");
+        });
+    </script>
+</body>
+
+</html>
